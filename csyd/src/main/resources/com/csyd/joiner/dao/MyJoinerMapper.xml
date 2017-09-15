@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.csyd.joiner.dao.MyJoinerMapper">
+    <resultMap type="com.csyd.pojo.Joiner1" id="joiner-result">
+        <id property="joinerId" column="joiner_id" />
+        <result property="joinerName" column="joiner_name" />
+        <result property="joinerPhone" column="joiner_phone" />
+        <result property="joinerLoc" column="joiner_loc" />
+        <result property="joinerDate" column="joiner_date" />
+        <result property="userFlag" column="user_flag"/>
+        <result property="organId" column="organ_id"/>
+        <result property="joinerLinkname" column="joiner_linkname"/>
+        <result property="joinerPhone" column="joiner_phone"/>
+        <result property="joinerEmail" column="joiner_email"/>
+        <result property="joinerAddress" column="joiner_address"/>
+        <result property="joinerBank" column="joiner_bank"/>
+        <result property="joinerHolder" column="joiner_holder"/>
+        <result property="joinerBanknum" column="joiner_banknum"/>
+        <result property="joinerExplain" column="joiner_explain"/>
+        <result property="joLevelId" column="jo_level_id"/>
+        <result property="joHeigherId" column="jo_heigher_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="joinerStatus" column="joiner_status"/>
+
+
+
+    </resultMap>
+
+    <sql id="whereCase">
+        <where>
+            1=1
+            <if test="joinerName!=null and joinerName!=''">
+                and j2.joiner_name=#{joinerName}
+            </if>
+
+            <if test="userFlag!=null and userFlag!=''">
+                and user_flag=#{userFlag}
+            </if>
+
+        </where>
+
+    </sql>
+
+    <sql id="orderBy">
+        order by
+        <choose>
+            <when test="sort=='joinerName'">j2.joiner_name</when>
+            <otherwise>joiner_loc</otherwise>
+        </choose>
+        <if test="order=='asc'">asc</if>
+        <if test="order=='desc'">desc</if>
+    </sql>
+
+    <select id="findJoiner" resultMap="joiner-result">
+        select j2.joiner_id, j2.joiner_name,j2.joiner_phone,j2.joiner_loc,j2.joiner_date,user_flag from joiner
+        j1,joiner j2,sys_user s
+        <include refid="whereCase" />
+        and	j1.joiner_id=j2.jo_heigher_id and j2.user_id=s.user_id and j1.user_id=#{userId}
+        <include refid="orderBy" />
+        limit #{page},#{rows}
+    </select>
+
+    <select id="getTotal" resultType="int">
+        select count(j2.joiner_name) from joiner j1,joiner j2 ,sys_user s
+        <include refid="whereCase"/>
+        and j1.joiner_id=j2.jo_heigher_id and j2.user_id=s.user_id  and j1.user_id=#{userId}
+
+    </select>
+
+    <select id="findById" resultMap="joiner-result">
+        select * from joiner where joiner_id=#{joinerId}
+    </select>
+
+    <insert id="addJoiner">
+        INSERT INTO joiner (joiner_name, organ_id, joiner_loc, joiner_linkname, joiner_phone, joiner_email, joiner_address, joiner_bank, joiner_holder, joiner_banknum, joiner_explain, jo_level_id, jo_heigher_id, joiner_date, user_id, joiner_status)
+        VALUES (#{joinerName}, #{organId}, #{joinerLoc}, #{joinerLinkname}, #{joinerPhone}, #{joinerEmail}, #{joinerAddress}, #{joinerBank}, #{joinerHolder}, #{joinerBanknum},#{joinerExplain},#{joLevelId},#{joHeigherId},#{joinerDate},#{userId},#{joinerStatus});
+
+    </insert>
+
+</mapper>

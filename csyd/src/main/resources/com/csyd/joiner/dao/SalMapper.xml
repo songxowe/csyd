@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.csyd.joiner.dao.SalMapper">
+
+    <resultMap id="sal-result" type="com.csyd.pojo.Business">
+        <id property="id" column="ID"/>
+        <result property="cusPhone" column="cus_phone"/>
+        <result property="proName" column="pro_name"/>
+        <result property="busType" column="bus_type"/>
+        <result property="busOpen" column="bus_open"/>
+        <result property="busClose" column="bus_close"/>
+        <result property="sellerId" column="seller_id"/>
+        <result property="busStatus" column="bus_status"/>
+        <result property="proFirst" column="pro_first"/>
+        <result property="busTime" column="bus_time"/>
+        <result property="sellerName" column="seller_name"/>
+        <result property="sellerPhone" column="seller_phone"/>
+    </resultMap>
+
+    <resultMap id="total-result" type="com.csyd.pojo.SalTotal">
+        <result property="sal" column="sal"/>
+        <result property="month" column="month"/>
+        <result property="busStatus" column="bus_status"/>
+        <result property="busTime" column="bus_time"/>
+    </resultMap>
+
+    <sql id="pageSQLHead">
+        select b.Cus_phone,b.Pro_name,b.Bus_open,b.Bus_close,b.bus_type,b.bus_status,b.bus_time,p.Pro_first,s.Seller_name,s.Seller_phone from business b,product p,seller s
+    </sql>
+
+    <sql id="orderBy">
+        <if test="sort != null and order != null">
+            order by
+            <choose>
+                <when test="sort == 'id'">b.id</when>
+                <when test="sort == 'cusPhone'">b.cus_phone</when>
+                <when test="sort == 'proName'">b.pro_name</when>
+                <when test="sort == 'busType'">b.bus_type</when>
+                <when test="sort == 'busOpen'">b.bus_open</when>
+                <when test="sort == 'busStatus'">b.bus_status</when>
+                <otherwise>b.cus_phone</otherwise>
+            </choose>
+
+
+            <if test="order == 'asc'">asc</if>
+            <if test="order == 'desc'">desc</if>
+        </if>
+    </sql>
+
+    <sql id="WhereCase">
+        <where>
+            1=1
+            <if test="beginDate != null and endDate != null">
+                and b.bus_open BETWEEN #{beginDate} AND #{endDate}
+            </if>
+            <if test="proName != null and proName != ''">
+                and b.pro_name like #{proName}
+            </if>
+            <if test="busStatus != null and busStatus != ''">
+                and b.bus_status=#{busStatus}
+            </if>
+        </where>
+    </sql>
+
+    <sql id="pageSQLFoot">
+        Limit #{pageno},#{pagesize}
+    </sql>
+
+    <select id="findPager" resultMap="sal-result">
+        <include refid="pageSQLHead" />
+        <include refid="WhereCase" />
+        and b.Pro_name=p.pro_name and b.Seller_id=s.Seller_id and
+        b.Seller_id in(SELECT s.Seller_id from seller s where s.joiner_id=(select joiner_id from joiner  where joiner.user_id=#{userId}))
+        <include refid="orderBy" />
+        <include refid="pageSQLFoot" />
+    </select>
+
+    <select id="total" resultMap="total-result">
+SELECT  sum(Pro_first) sal,month(Bus_open) month,bus_status,bus_time from
+ (<include refid="pageSQLHead" />
+ where b.Pro_name=p.pro_name and b.Seller_id=s.Seller_id and  b.Seller_id in(SELECT s.Seller_id from seller s where s.joiner_id=(select joiner_id from joiner  where joiner.user_id=#{userId}))) j
+where year(Bus_open)=#{year} GROUP BY month
+    </select>
+
+    <select id="findPagerTotal" resultType="long">
+        SELECT count(Cus_phone) from
+  (<include refid="pageSQLHead" />
+    <include refid="WhereCase" />
+       and b.Pro_name=p.pro_name and b.Seller_id=s.Seller_id and
+  b.Seller_id in(SELECT s.Seller_id from seller s where s.joiner_id=(select joiner_id from joiner  where joiner.user_id=#{userId})))j
+    </select>
+</mapper>

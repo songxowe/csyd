@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.csyd.core.dao.CountMapper">
+    <resultMap type="com.csyd.pojo.Vaddress" id="count-result">
+
+        <result property="count" column="count"/>
+        <result property="proName" column="pro_name"/>
+        <result property="sellerName" column="seller_name"/>
+        <result property="sellerId" column="seller_id"/>
+        <result property="busType" column="bus_type"/>
+        <result property="sellerLoc" column="seller_loc"/>
+        <result property="busOpen" column="bus_open"/>
+
+
+    </resultMap>
+
+    <sql id="whereCase">
+        <where>
+            1=1
+            <if test="sellerLoc!=null and sellerLoc!=''">
+                and seller_loc=#{sellerLoc}
+            </if>
+
+            <if test="proName!=null and proName!=''">
+                and pro_name=#{proName}
+            </if>
+
+            <if test="beginDate != null and endDate != null">
+                and DATE_FORMAT(bus_open,'%Y-%m-%d')
+                BETWEEN DATE_FORMAT(#{beginDate},'%Y-%m-%d') and DATE_FORMAT(#{endDate},'%Y-%m-%d')
+            </if>
+        </where>
+    </sql>
+
+
+    <select id="findAddress" resultMap="count-result">
+        select * from v_address
+        <include refid="whereCase"/>
+
+    </select>
+
+    <resultMap type="com.csyd.pojo.Vbusiness" id="bs-result">
+
+        <result property="sellerPhone" column="seller_phone"/>
+        <result property="proName" column="pro_name"/>
+        <result property="cusPhone" column="cus_phone"/>
+        <result property="organName" column="organ_name"/>
+        <result property="busType" column="bus_type"/>
+        <result property="sellerLoc" column="seller_loc"/>
+        <result property="busOpen" column="bus_open"/>
+        <result property="busClose" column="bus_close"/>
+
+
+    </resultMap>
+
+    <sql id="whereCase1">
+        <where>
+            1=1
+            <if test="sellerLoc!=null and sellerLoc!=''">
+                and seller_loc=#{sellerLoc}
+            </if>
+
+            <if test="organName!=null and organName!=''">
+                and organ_name=#{organName}
+            </if>
+
+            <if test="proName!=null and proName!=''">
+                and pro_name=#{proName}
+            </if>
+            <if test="sellerPhone!=null and sellerPhone!=''">
+                and seller_phone=#{sellerPhone}
+            </if>
+            <if test="cusPhone!=null and cusPhone!=''">
+                and cus_phone=#{cusPhone}
+            </if>
+
+            <if test="beginDate != null and endDate != null">
+                and DATE_FORMAT(bus_open,'%Y-%m-%d')
+                BETWEEN DATE_FORMAT(#{beginDate},'%Y-%m-%d') and DATE_FORMAT(#{endDate},'%Y-%m-%d')
+            </if>
+        </where>
+    </sql>
+
+    <sql id="orderBy">
+        order by
+        <choose>
+            <when test="sort=='busOpen'">bus_open</when>
+            <otherwise>seller_loc</otherwise>
+        </choose>
+        <if test="order=='asc'">asc</if>
+        <if test="order=='desc'">desc</if>
+    </sql>
+
+
+
+    <select id="findBs" resultMap="bs-result">
+        select * from v_business
+        <include refid="whereCase1"/>
+        <include refid="orderBy" />
+        LIMIT #{page}, #{rows}
+    </select>
+
+
+
+    <select id="getTotal" resultType="int">
+        select count(seller_phone) from v_business
+        <include refid="whereCase1" />
+    </select>
+    <resultMap type="com.csyd.pojo.Vbus" id="vbus-result">
+        <result property="sellerPhone"  column="seller_phone"/>
+        <result property="joinerName"  column="joiner_name"/>
+        <result property="cusPhone"  column="cus_phone"/>
+        <result property="busType"  column="bus_type"/>
+        <result property="proName"  column="pro_name"/>
+        <result property="busOpen"  column="bus_open"/>
+        <result property="busClose"  column="bus_close"/>
+
+    </resultMap>
+
+    <sql id="whereCase2">
+        <where>
+            1=1
+            <if test="sellerPhone!=null and sellerPhone!=''">
+                and seller_phone=#{sellerPhone}
+            </if>
+
+            <if test="joinerName!=null and joinerName!=''">
+                and joiner_name=#{joinerName}
+            </if>
+            <if test="beginDate != null and endDate != null">
+                and DATE_FORMAT(bus_open,'%Y-%m-%d')
+                BETWEEN DATE_FORMAT(#{beginDate},'%Y-%m-%d') and DATE_FORMAT(#{endDate},'%Y-%m-%d')
+            </if>
+        </where>
+    </sql>
+
+
+    <sql id="orderBy1">
+        order by
+        <choose>
+            <when test="sort=='sellerPhone'">seller_open</when>
+            <otherwise>cus_phone</otherwise>
+        </choose>
+        <if test="order=='asc'">asc</if>
+        <if test="order=='desc'">desc</if>
+    </sql>
+    <select id="findVbus" resultMap="vbus-result">
+        select * from v_bus
+        <include refid="whereCase2"/>
+        <include refid="orderBy1" />
+        LIMIT #{page}, #{rows}
+    </select>
+
+
+    <select id="getTotalVbus" resultType="int">
+        select count(seller_phone) from v_bus
+        <include refid="whereCase2" />
+    </select>
+
+</mapper>

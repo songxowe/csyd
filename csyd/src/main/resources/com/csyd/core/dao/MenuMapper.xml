@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.csyd.core.dao.MenuMapper">
+
+	<resultMap type="com.csyd.pojo.SysMenu" id="menu-result">
+		<id property="menuId" column="MENU_ID" />
+		<result property="menuParentId" column="MENU_PARENT_ID" />
+		<result property="seq" column="SEQ" />
+		<result property="menuName" column="MENU_NAME" />
+		<result property="menuDescn" column="MENU_DESCN" />
+		<result property="menuLinkUrl" column="MENU_LINK_URL" />
+		<result property="menuStatus" column="MENU_STATUS" />
+	</resultMap>
+
+	<sql id="pageSQLHead">
+		select * from sys_menu
+	</sql>
+
+	<sql id="orderBy">
+		<if test="sort != null and order != null">
+			order by
+			<choose>
+				<when test="sort == 'menuId'">MENU_ID</when>
+				<when test="sort == 'menuName'">MENU_NAME</when>
+				<when test="sort == 'seq'">SEQ</when>
+				<when test="sort == 'menuDescn'">MENU_DESCN</when>
+			</choose>
+
+			<if test="order == 'asc'">asc</if>
+			<if test="order == 'desc'">desc</if>
+		</if>
+	</sql>
+
+	<sql id="WhereCase">
+		<where>
+			1=1
+			<if test="menuName != null and menuName != ''">
+				and menu_name LIKE #{menuName}
+			</if>
+			<if test="menuDescn != null and menuDescn != ''">
+				and menu_descn LIKE #{menuDescn}
+			</if>
+			<if test="menuParentId != null and menuParentId > 0">
+				and menu_parent_id = #{menuParentId}
+			</if>
+		</where>
+	</sql>
+
+	<sql id="pageSQLFoot">
+    Limit #{pageno},#{pagesize}
+	</sql>
+
+	<select id="findPager" resultMap="menu-result">
+		<include refid="pageSQLHead" />
+		<include refid="WhereCase" />
+		<include refid="orderBy" />
+		<include refid="pageSQLFoot" />
+	</select>
+
+
+	<select id="findPagerTotal" resultType="long">
+		select count(menu_id) from sys_menu
+		<include refid="WhereCase" />
+	</select>
+</mapper>

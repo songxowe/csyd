@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.csyd.core.dao.UserRoleMapper">
+
+	<resultMap type="com.csyd.pojo.SysRole" id="user-role-result">
+		<id property="roleId" column="ROLE_ID" />
+		<result property="roleName" column="ROLE_NAME" />
+		<result property="roleDesc" column="ROLE_DESC" />
+		<result property="roleCode" column="ROLE_CODE" />
+	</resultMap>
+
+	<sql id="pageSQLHead">
+		select * from sys_role
+	</sql>
+
+	<sql id="orderBy">
+		<if test="sort != null and order != null">
+			order by
+			<choose>
+				<when test="sort == 'userId'">ROLE_ID</when>
+				<when test="sort == 'name'">ROLE_NAME</when>
+				<when test="sort == 'code'">ROLE_CODE</when>
+				<when test="sort == 'descn'">ROLE_DESC</when>
+			</choose>
+
+			<if test="order == 'asc'">asc</if>
+			<if test="order == 'desc'">desc</if>
+		</if>
+	</sql>
+
+	<sql id="WhereCase">
+		<where>
+			1=1
+			<if test="name != null and name != ''">
+				and ROLE_NAME LIKE #{name}
+			</if>
+			<if test="code != null and code != ''">
+				and ROLE_CODE LIKE #{code}
+			</if>
+			<if test="descn != null and descn != ''">
+				and ROLE_DESC LIKE #{descn}
+			</if>
+			<if test='authorize != null and authorize == "1"'>
+				and ROLE_ID in (select ROLE_ID from SYS_USER_ROLE where
+				USER_ID=#{userId})
+			</if>
+			<if test='authorize != null and authorize == "0"'>
+				and ROLE_ID not in (select ROLE_ID from SYS_USER_ROLE where
+				USER_ID=#{userId})
+			</if>
+		</where>
+	</sql>
+
+	<sql id="pageSQLFoot">
+    	Limit #{pageno},#{pagesize}
+	</sql>
+
+	<select id="findPager" resultMap="user-role-result">
+		<include refid="pageSQLHead" />
+		<include refid="WhereCase" />
+		<include refid="orderBy" />
+		<include refid="pageSQLFoot" />
+	</select>
+
+
+	<select id="findPagerTotal" resultType="long">
+		select count(ROLE_id) from SYS_ROLE
+		<include refid="WhereCase" />
+	</select>
+</mapper>

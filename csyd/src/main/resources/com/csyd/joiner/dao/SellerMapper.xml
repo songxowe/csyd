@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.csyd.joiner.dao.SellerMapper">
+    <resultMap id="result-sysUser" type="com.csyd.pojo.SysUser">
+        <id property="userId" column="user_id"></id>
+        <result property="userFlag" column="user_flag"/>
+        <result property="userName" column="user_name"/>
+        <result property="userPassword" column="user_password"/>
+    </resultMap>
+
+    <resultMap id="result-joiner" type="com.csyd.pojo.Joiner">
+        <id property="joinerId" column="joiner_id"/>
+        <result property="joinerName" column="joiner_name"/>
+
+    </resultMap>
+
+    <resultMap id="resule-seller" type="com.csyd.pojo.Seller">
+        <id property="sellerId" column="seller_id"></id>
+        <result property="sellerName" column="seller_name"/>
+        <result property="sellerPhone" column="seller_phone"/>
+        <result property="joinerId" column="joiner_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="sellerSex" column="seller_sex"/>
+        <result property="sellerCard" column="seller_card"/>
+        <result property="sellerCardnum" column="seller_cardnum"/>
+        <result property="sellerRemark" column="seller_remark"/>
+        <result property="sellerDate" column="seller_date" javaType="java.util.Date"/>
+        <result property="sellerLoc" column="seller_loc"/>
+
+
+        <association property="sysUser" column="user_id" javaType="com.csyd.pojo.SysUser" resultMap="result-sysUser"/>
+        <association property="joiner" column="joiner_name" javaType="com.csyd.pojo.Joiner" resultMap="result-joiner"/>
+    </resultMap>
+
+    <sql id="pageSQLHead">
+        SELECT  s.*,u.user_flag , j.joiner_name from seller s,sys_user u ,joiner j where
+         u.user_id = s.user_id and s.joiner_id =j.joiner_id and j.user_id=#{userId}
+    </sql>
+    <sql id="whereCase" >
+
+        <if test="sellerName!=null and sellerName != ''">
+            and s.seller_name like CONCAT(CONCAT('%',#{sellerName}),'%')
+        </if>
+        <if test="sellerPhone !=null and sellerPhone !=''">
+            and s.seller_phone like CONCAT(CONCAT('%',#{sellerPhone}),'%')
+        </if>
+        <if test="userFlag !=null and userFlag =='正常' ">
+            and u.user_flag ='1'
+        </if>
+        <if test="userFlag !=null and userFlag =='冻结'">
+            and u.user_flag ='0'
+        </if>
+
+
+    </sql>
+
+    <sql id="orderBy">
+        order BY
+        <choose>
+            <when test="sort=='sellerName'">s.seller_name</when>
+            <otherwise>s.seller_id</otherwise>
+        </choose>
+        <if test="order=='asc'">asc</if>
+        <if test="order=='desc'">DESC</if>
+    </sql>
+
+    <select id="findPager" resultMap="resule-seller">
+        <include refid="pageSQLHead"/>
+        <include refid="whereCase"/>
+        <include refid="orderBy"/>
+        LIMIT #{page}, #{rows}
+
+    </select>
+
+    <select id="getTotal" resultType="int">
+        select count(seller_id) from (SELECT  s.*,u.user_flag , j.joiner_name from seller s,sys_user u ,joiner j where
+        u.user_id = s.user_id and s.joiner_id =j.joiner_id and j.user_id=#{userId})m
+        <include refid="whereCase"/>
+    </select>
+
+    <select id="findById" resultMap="resule-seller" parameterType="int">
+        SELECT  s.*,u.user_flag , j.joiner_name from seller s,sys_user u ,joiner j where  u.user_id = s.user_id and s.joiner_id =j.joiner_id and Seller_id =#{sellerId}
+    </select>
+
+
+    <select id="findSysUser" resultMap="result-sysUser" >
+        select * from sys_user where user_id =#{userId}
+
+    </select>
+
+</mapper>

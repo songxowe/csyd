@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.csyd.core.dao.RoleMapper">
+
+<resultMap type="com.csyd.pojo.SysRole" id="role-result">
+    <id property="roleId" column="role_ID" />
+    <result property="roleName" column="role_NAME" />
+    <result property="roleDesc" column="role_desc" />
+    <result property="roleCode" column="role_code" />
+  </resultMap>
+
+  <sql id="pageSQLHead">
+    select * from sys_role
+  </sql>
+
+  <sql id="orderBy">
+    <if test="sort != null and order != null">
+      order by
+      <choose>
+        <when test="sort == 'id'">role_ID</when>
+        <when test="sort == 'name'">role_NAME</when>
+        <when test="sort == 'code'">role_CODE</when>
+        <when test="sort == 'descn'">role_DESC</when>
+      </choose>
+
+      <if test="order == 'asc'">asc</if>
+      <if test="order == 'desc'">desc</if>
+    </if>
+  </sql>
+
+  <sql id="WhereCase">
+    <where>
+      1=1
+      <if test="name != null and name != ''">
+        and role_NAME LIKE #{name}
+      </if>
+      <if test="code != null and code != ''">
+        and role_CODE LIKE #{code}
+      </if>
+      <if test="descn != null and descn != ''">
+        and role_DESC LIKE #{descn}
+      </if>
+    </where>
+  </sql>
+
+  <sql id="pageSQLFoot">
+    Limit #{pageno},#{pagesize}
+  </sql>
+
+  <select id="findPager" resultMap="role-result">
+    <include refid="pageSQLHead" />
+    <include refid="WhereCase" />
+    <include refid="orderBy" />
+    <include refid="pageSQLFoot" />
+  </select>
+
+
+  <select id="findPagerTotal" resultType="long">
+    select count(role_id) from SYS_ROLE
+    <include refid="WhereCase" />
+  </select>
+</mapper>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.csyd.seller.dao.SellerSalMapper">
+    <resultMap id="business-result" type="com.csyd.pojo.Business">
+        <id property="id" column="ID"/>
+        <result property="cusPhone" column="cus_phone"/>
+        <result property="proName" column="pro_name"/>
+        <result property="busType" column="bus_type"/>
+        <result property="busOpen" column="bus_open"/>
+        <result property="busClose" column="bus_close"/>
+        <result property="sellerId" column="seller_id"/>
+        <result property="busStatus" column="bus_status"/>
+        <result property="proMonth" column="pro_month"/>
+    </resultMap>
+
+    <sql id="pageSQLHead">
+        select b.cus_phone,b.Bus_open,b.Bus_close,b.bus_status,b.bus_type,b.Pro_name,b.Seller_id,b.id,p.Pro_month from business b,product p
+    </sql>
+
+    <sql id="orderBy">
+        <if test="sort != null and order != null">
+            order by
+            <choose>
+                <when test="sort == 'id'">b.id</when>
+                <when test="sort == 'cusPhone'">b.cus_phone</when>
+                <when test="sort == 'proName'">b.pro_name</when>
+                <when test="sort == 'busType'">b.bus_type</when>
+                <when test="sort == 'busOpen'">b.bus_open</when>
+                <when test="sort == 'busStatus'">b.bus_status</when>
+            </choose>
+
+            <if test="order == 'asc'">asc</if>
+            <if test="order == 'desc'">desc</if>
+        </if>
+    </sql>
+
+    <sql id="WhereCase">
+        <where>
+            1=1
+            <if test="beginDate != null and endDate != null">
+                and b.bus_open BETWEEN #{beginDate} AND #{endDate}
+            </if>
+            <if test="proName != null and proName != ''">
+                and b.pro_name like #{proName}
+            </if>
+            <if test="busStatus != null and busStatus != ''">
+                and b.bus_status=#{busStatus}
+            </if>
+        </where>
+    </sql>
+
+    <sql id="pageSQLFoot">
+        Limit #{pageno},#{pagesize}
+    </sql>
+
+    <select id="findPager" resultMap="business-result">
+        <include refid="pageSQLHead" />
+        <include refid="WhereCase" />
+         and b.pro_name=p.pro_name
+        <include refid="orderBy" />
+        <include refid="pageSQLFoot" />
+    </select>
+
+
+    <select id="findPagerTotal" resultType="long">
+        select count(b.id) from business b,product p
+        <include refid="WhereCase" />
+        and b.pro_name=p.pro_name
+    </select>
+</mapper>

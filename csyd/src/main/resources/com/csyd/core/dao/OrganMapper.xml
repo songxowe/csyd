@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.csyd.core.dao.OrganMapper">
+    
+    <resultMap id="organ-result" type="com.csyd.pojo.Organ">
+        <id property="organId" column="organ_id"/>
+        <result property="organHeigh" column="organ_heigh" />
+        <result property="organName" column="organ_name" />
+        <result property="organType" column="organ_type" />
+        <result property="organLoc" column="organ_loc" />
+        <result property="organDir" column="organ_dir" />
+        <result property="organLinkman" column="organ_linkman" />
+        <result property="organPhone" column="organ_phone" />
+        <result property="organExplain" column="organ_explain" />
+    </resultMap>
+
+    <sql id="whereCase" >
+        <where>
+            1=1
+            <if test="organName!=null and organName != ''">
+                and organ_name like CONCAT(CONCAT('%',#{organName}),'%')
+
+            </if>
+        </where>
+    </sql>
+    
+    <sql id="orderBy">
+        order BY
+        <choose>
+            <when test="sort == 'organ_name'">organName</when>
+            <otherwise>organ_id</otherwise>
+        </choose>
+        <if test="order=='asc'">asc</if>
+        <if test="order=='desc'">DESC</if>
+    </sql>
+
+    <select id="findPager" resultMap="organ-result">
+        SELECT * FROM organ
+        INNER JOIN (
+        SELECT organ_id FROM organ
+        <include refid="whereCase"/>
+        <include refid="orderBy"/>
+        LIMIT #{page}, #{rows}
+        ) AS lim USING(organ_id);
+    </select>
+
+
+    <select id="getTotal" resultType="int">
+        select count(organ_id) from organ
+        <include refid="whereCase"/>
+    </select>
+
+    <select id="find" resultMap="organ-result">
+       select * from organ
+    </select>
+
+    <select id="findById" resultMap="organ-result">
+        select * from organ where organ_id=#{organId}
+    </select>
+
+<select id="findByParam" resultMap="organ-result">
+    SELECT * from organ <include refid="whereCase"/>
+</select>
+
+    <insert id="insertInfoBatch" parameterType="java.util.List">
+        insert into organ (organ_id,organ_heigh,organ_name,organ_type,organ_loc,organ_dir,
+        organ_linkman,organ_phone,organ_explain)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{organId},#{organHeigh},#{organName},#{organType},#{organLoc},#{organDir},
+            #{organLinkman},#{organPhone},#{organExplain}))
+        </foreach>
+    </insert>
+</mapper>

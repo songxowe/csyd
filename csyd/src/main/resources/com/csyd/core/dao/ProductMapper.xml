@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.csyd.core.dao.ProductMapper">
+    <resultMap id="product-result" type="com.csyd.pojo.Product">
+        <id property="proId" column="pro_id"/>
+        <result property="proName" column="pro_name"/>
+        <result property="proType" column="pro_type"/>
+        <result property="proCost" column="pro_cost"/>
+        <result property="proLoc" column="pro_loc"/>
+        <result property="proImg" column="pro_img"/>
+        <result property="proFirst" column="pro_first"/>
+        <result property="proMonth" column="pro_month"/>
+        <result property="proLink" column="pro_link"/>
+        <result property="proOut" column="pro_out"/>
+        <result property="proStatus" column="pro_status"/>
+        <result property="proDate" column="pro_date"/>
+    </resultMap>
+
+    <sql id="whereCase">
+        <where>
+            1=1
+            <if test="proName != null and proName != ''">
+                and pro_name like CONCAT(CONCAT('%',#{proName}),'%')
+            </if>
+            <if test="proStatus !=null and proStatus !=''">
+                and pro_status LIKE #{proStatus}
+            </if>
+        </where>
+    </sql>
+
+
+    <sql id="orderBy">
+        ORDER BY
+        <choose>
+            <when test="sort=='proName'">pro_name</when>
+            <when test="sort=='proType'">pro_type</when>
+            <when test="sort=='proCost'">pro_cost</when>
+            <when test="sort=='proLoc'">pro_loc</when>
+            <when test="sort=='proImg'">pro_img</when>
+            <when test="sort=='proFirst'">pro_first</when>
+            <when test="sort=='proMonth'">pro_month</when>
+            <when test="sort=='proLink'">pro_link</when>
+            <when test="sort=='proOut'">pro_out</when>
+            <when test="sort=='proStatus'">pro_status</when>
+            <when test="sort=='proDate'">pro_date</when>
+            <otherwise>pro_id</otherwise>
+        </choose>
+        <if test="order == 'asc'">asc</if>
+        <if test="order == 'desc'">desc</if>
+    </sql>
+
+    <select id="findPager" resultMap="product-result">
+        select pro_id,pro_name,pro_type,pro_cost,pro_loc,pro_img,pro_first,
+        pro_month,pro_link,pro_out,pro_status,pro_date from product
+        INNER JOIN (
+        SELECT pro_id from product
+        <include refid="whereCase"/>
+        <include refid="orderBy"/>
+        LIMIT #{page}, #{rows}
+        ) AS lim USING(pro_id);
+    </select>
+
+    <select id="getTotal" resultType="int">
+        select COUNT(pro_id) from product
+        <include refid="whereCase"/>
+    </select>
+
+    <select id="findByParam" resultMap="product-result">
+        select pro_id,pro_name,pro_type,pro_cost,pro_loc,pro_img,pro_first,
+        pro_month,pro_link,pro_out,pro_status,pro_date from product
+        <include refid="whereCase"/>
+    </select>
+
+</mapper>

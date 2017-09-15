@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.csyd.seller.dao.BusRecordMapper">
+
+    <resultMap id="business-result" type="com.csyd.pojo.Business">
+        <id property="id" column="ID"/>
+        <result property="cusPhone" column="cus_phone"/>
+        <result property="proName" column="pro_name"/>
+        <result property="busType" column="bus_type"/>
+        <result property="busOpen" column="bus_open"/>
+        <result property="busClose" column="bus_close"/>
+        <result property="sellerId" column="seller_id"/>
+        <result property="sellerPhone" column="seller_phone"/>
+        <result property="sellerName" column="seller_name"/>
+    </resultMap>
+    
+    <sql id="pageSQLHead">
+        select * from business
+    </sql>
+    
+    <sql id="orderBy">
+        <if test="sort != null and order != null">
+            order by 
+            <choose>
+                <when test="sort == 'id'">id</when>
+                <when test="sort == 'cusPhone'">cus_phone</when>
+                <when test="sort == 'proName'">pro_name</when>
+                <when test="sort == 'busType'">bus_type</when>
+                <when test="sort == 'busOpen'">bus_open</when>
+
+            </choose>
+            
+            <if test="order == 'asc'">asc</if>
+            <if test="order == 'desc'">desc</if>
+        </if>
+    </sql>
+    
+    <sql id="WhereCase">
+        <where>
+            1=1
+            <if test="cusPhone != null and cusPhone != ''">
+                and cus_phone like #{cusPhone}
+            </if>
+            <if test="proName != null and proName != ''">
+                and pro_name like #{proName}
+            </if>
+            <if test="beginDate != null and endDate != null">
+                and bus_open BETWEEN #{beginDate} AND #{endDate}
+            </if>
+        </where>
+    </sql>
+
+    <sql id="pageSQLFoot">
+        Limit #{pageno},#{pagesize}
+    </sql>
+
+    <select id="findPager" resultMap="business-result">
+        <include refid="pageSQLHead" />
+        <include refid="WhereCase" />
+        <include refid="orderBy" />
+        <include refid="pageSQLFoot" />
+    </select>
+
+
+    <select id="findPagerTotal" resultType="long">
+        select count(id) from business
+        <include refid="WhereCase" />
+    </select>
+
+
+    <sql id="pageSQLHead1">
+        select b.*,s.Seller_phone,s.Seller_name from business b,seller s
+    </sql>
+
+    <sql id="WhereCase1">
+        <where>
+            1=1
+            <if test="sellerPhone != null and sellerPhone != ''">
+                and seller_phone like #{sellerPhone}
+            </if>
+            <if test="sellerName != null and sellerName != ''">
+                and seller_name like #{sellerName}
+            </if>
+            <if test="beginDate != null and endDate != null">
+                and bus_open BETWEEN #{beginDate} AND #{endDate}
+            </if>
+        </where>
+    </sql>
+
+
+    <select id="findPager1" resultMap="business-result">
+        <include refid="pageSQLHead1" />
+        <include refid="WhereCase1" />
+        and b.Seller_id=s.Seller_id and s.joiner_id=#{joinerId}
+        <include refid="orderBy" />
+        <include refid="pageSQLFoot" />
+    </select>
+
+
+    <select id="findPagerTotal1" resultType="long">
+        select count(id) from business b,seller s
+        <include refid="WhereCase1" />
+        and b.Seller_id=s.Seller_id and s.joiner_id=#{joinerId}
+    </select>
+</mapper>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.csyd.core.dao.EmpMapper">
+
+    <resultMap type="com.csyd.pojo.Employee" id="emp-result">
+        <id property="id" column="id" />
+        <result property="organId" column="organ_id" />
+        <result property="job" column="job" />
+        <result property="name" column="name" />
+
+        <result property="sex" column="sex" />
+        <result property="phone" column="phone" />
+        <result property="docType" column="doc_type" />
+        <result property="docNumber" column="doc_number" />
+        <result property="agentName" column="agent_name" />
+        <result property="bankName" column="bank_name" />
+        <result property="bankNumber" column="bank_number" />
+        <result property="userId" column="user_id" />
+    </resultMap>
+    <select id="findById" resultMap="emp-result">
+        select * from employee where id=#{id}
+    </select>
+
+
+    <sql id="whereCase">
+        <where>
+            1=1
+            <if test="id!=null and id!=''">
+                and user_id=#{id}
+            </if>
+
+            <if test="name!=null and name!=''">
+                and name=#{name}
+            </if>
+            <if test="phone!=null and phone!=''">
+                and phone=#{phone}
+            </if>
+
+        </where>
+    </sql>
+
+    <sql id="orderBy">
+        order by
+        <choose>
+            <when test="sort=='job'">job</when>
+            <otherwise>id</otherwise>
+        </choose>
+        <if test="order=='asc'">asc</if>
+        <if test="order=='desc'">desc</if>
+    </sql>
+
+
+    <select id="findEmps" resultMap="emp-result">
+        select * from employee
+        <include refid="whereCase" />
+        <include refid="orderBy" />
+        limit #{page},#{rows}
+
+    </select>
+
+
+    <select id="getTotal" resultType="int">
+        select  count(user_id) from employee
+        <include refid="whereCase"/>
+
+    </select>
+
+</mapper>

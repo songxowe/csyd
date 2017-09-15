@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.csyd.core.dao.JoinerMapper">
+    <resultMap id="organ-result" type="com.csyd.pojo.Organ">
+        <id property="organId" column="organ_id"/>
+        <result property="organName" column="organ_name"/>
+    </resultMap>
+
+
+
+    <sql id="pageSQLHead">
+        SELECT * FROM (select joiner_id,joiner_name,joiner_linkname,organ_name,joiner_date,joiner_status from joiner j,organ o where j.organ_id=o.organ_id) as k INNER  JOIN
+        (SELECT joiner_Id FROM (select joiner_id,joiner_name,joiner_linkname,organ_name,joiner_date,joiner_status from joiner j,organ o where j.organ_id=o.organ_id) as k
+    </sql>
+
+    <sql id="orderBy">
+        <if test="sort != null and order != null">
+            order by
+            <choose>
+                <when test="sort == 'joinerId'">joiner_id</when>
+                <when test="sort == 'joinerName'">joiner_name</when>
+                <when test="sort == 'joinerLinkname'">joiner_linkname</when>
+                <when test="sort == 'organId'">organ_id</when>
+                <when test="sort == 'joinerDate'">joiner_date</when>
+                <when test="sort == 'joinerStatus'">joiner_status</when>
+                <otherwise>joiner_id</otherwise>
+            </choose>
+
+            <if test="order == 'asc'">asc</if>
+            <if test="order == 'desc'">desc</if>
+        </if>
+    </sql>
+
+    <sql id="WhereCase">
+        <where>
+            1=1
+            <if test="joinerName != null and joinerName != ''">
+                and joiner_name LIKE #{joinerName}
+            </if>
+            <if test="joinerStatus != null and joinerStatus != ''">
+                and joiner_status = #{joinerStatus}
+            </if>
+            <if test="beginDate != null and endDate != null">
+                and DATE_FORMAT(joiner_Date,'%Y-%m-%d')
+                BETWEEN DATE_FORMAT(#{beginDate},'%Y-%m-%d') and DATE_FORMAT(#{endDate},'%Y-%m-%d')
+            </if>
+        </where>
+    </sql>
+
+
+    <select id="findPager" resultMap="joiner-result">
+        <include refid="pageSQLHead" />
+        <include refid="WhereCase" />
+        <include refid="orderBy" />
+        LIMIT #{pageno}, #{pagesize}
+        ) AS lim USING(joiner_id);
+    </select>
+
+    <select id="findPagerTotal" resultType="long">
+        select count(joiner_Name) from joiner
+        <include refid="WhereCase" />
+    </select>
+
+    <select id="findById"  parameterType="int" resultMap="joiner-result">
+        select joiner_id ,joiner_name , organ_name ,j.organ_id as organ_id, joiner_loc , joiner_linkname ,
+        joiner_phone, joiner_email, joiner_address, joiner_bank ,
+        joiner_holder, joiner_banknum , joiner_explain , jo_level_id ,
+        jo_heigher_id , joiner_date , user_id , joiner_status  ,joiner_Remark
+        from joiner j,organ o where j.organ_id=o.organ_id and joiner_id =#{joinerId}
+    </select>
+
+    <resultMap id="joiner-result" type="com.csyd.pojo.Joiner">
+        <id property="joinerId" column="joiner_id"/>
+        <result property="joinerName" column="joiner_name"/>
+        <result property="joinerLoc" column="joiner_Loc"/>
+        <result property="joinerLinkname" column="joiner_linkname"/>
+        <result property="joinerPhone" column="joiner_Phone"/>
+        <result property="joinerEmail" column="joiner_email"/>
+        <result property="joinerAddress" column="joiner_address"/>
+        <result property="joinerBank" column="joiner_bank"/>
+        <result property="joinerHolder" column="joiner_holder"/>
+        <result property="joinerBanknum" column="joiner_Banknum"/>
+        <result property="joinerExplain" column="joiner_Explain"/>
+        <result property="joLevelId" column="jo_Level_Id"/>
+        <result property="joHeigherId" column="jo_Heigher_Id"/>
+        <result property="joinerDate" column="joiner_date" javaType="java.util.Date"/>
+
+        <result property="userId" column="user_Id"/>
+        <result property="joinerStatus" column="joiner_Status"/>
+        <result property="joinerRemark" column="joiner_Remark"/>
+        <association property="organ" column="organ_name" javaType="com.csyd.pojo.Organ" resultMap="organ-result">
+            <id property="organId" column="organ_id"/>
+            <result property="organName" column="organ_name"/>
+        </association>
+    </resultMap>
+
+
+</mapper>

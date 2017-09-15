@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.csyd.core.dao.UserMapper">
+	<resultMap type="com.csyd.pojo.SysUser" id="user-result">
+		<id property="userId" column="USER_ID" />
+		<result property="userName" column="USER_NAME" />
+		<result property="userPassword" column="USER_PASSWORD" />
+		<result property="userFlag" column="USER_FLAG" />
+	</resultMap>
+
+	<sql id="pageSQLHead">
+		select * from sys_user
+	</sql>
+
+	<sql id="orderBy">
+		<if test="sort != null and order != null">
+			order by
+			<choose>
+				<when test="sort == 'userId'">USER_ID</when>
+				<when test="sort == 'userName'">USER_NAME</when>
+				<when test="sort == 'userFlag'">USER_FLAG</when>
+			</choose>
+
+			<if test="order == 'asc'">asc</if>
+			<if test="order == 'desc'">desc</if>
+		</if>
+	</sql>
+
+	<sql id="WhereCase">
+		<where>
+			1=1
+			<if test="userName != null and userName != ''">
+				and USER_NAME LIKE #{userName}
+			</if>
+			<if test="userFlag != null and userFlag != ''">
+				and USER_FLAG LIKE #{userFlag}
+			</if>
+		</where>
+	</sql>
+
+	<sql id="pageSQLFoot">
+		Limit #{pageno},#{pagesize}
+	</sql>
+
+	<select id="findPager" resultMap="user-result">
+		<include refid="pageSQLHead" />
+		<include refid="WhereCase" />
+		<include refid="orderBy" />
+		<include refid="pageSQLFoot" />
+	</select>
+
+	<select id="findPagerTotal" resultType="long">
+		select count(user_id) from SYS_USER
+		<include refid="WhereCase" />
+	</select>
+</mapper>
